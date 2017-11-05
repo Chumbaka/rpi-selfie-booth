@@ -1,29 +1,32 @@
-import editThis
+import config
 import picamera
 from twython import Twython
 from PIL import Image
 from time import sleep
 from gpiozero import Button
 
-button = Button(2)
+button = Button(config.BUTTON)
 
 #camera = picamera.PiCamera()
-#camera.start_preview()
 
 # img = Image.open("foo.jpg")
 
 # overlol = camera.add_overlay(img.tobytes(), size=img.size)
 
-twitter = Twython(editThis.CONSUMER_KEY, editThis.CONSUMER_SECRET, editThis.ACCESS, editThis.ACCESS_SECRET)
+twitter = Twython(config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS, config.ACCESS_SECRET)
 
-button.wait_for_press()
-print("finally")
+while True:
 
-#camera.capture("bar.jpg")
-#camera.stop_preview()
-#photo = open("bar.jpg", "rb")
+	#camera.start_preview()
+	#camera.capture("bar.jpg")
+	#camera.stop_preview()
+	#photo = open("bar.jpg", "rb")
 
-# twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
-
-
-
+	try:
+		twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
+		#TODO: Upload complete picture
+		sleep(5)
+	except:
+		#TODO: Upload Failed & check out the twitter acc. picture 
+		sleep(5)
+		pass
