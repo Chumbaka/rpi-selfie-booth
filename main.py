@@ -11,16 +11,16 @@ from gpiozero import Button
 def countdown(sec):
 	sec = str(sec)
 	print(sec)
-	# sec = Popen(["feh", "-x", sec + ".jpg"])
+	sec = Popen(["feh", "-x", "./img/" + sec + ".png"])
 	sleep(1)
-	# sec.terminate()
+	sec.terminate()
 
 camera = picamera.PiCamera()
 
 twitter = Twython(config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS, config.ACCESS_SECRET)
 
 #background
-bg = Popen(["feh", "-x", "bg.jpg"])
+bg = Popen(["feh", "-x", "./img/bg.png"])
 
 print(bg)
 
@@ -32,39 +32,38 @@ camera.start_preview(fullscreen=False, window=window)
 
 while True:
 	
-	if(Button(config.KILLBUTTON).is_pressed == True):
-		break
+	#checking Button.value == True in a loop is too stressful for rpi	
+	Button(config.BUTTON).wait_for_press()
+	#5
+	countdown(5)
+	#4
+	countdown(4)
+	#3
+	countdown(3)
+	#2
+	countdown(2)
+	#1
+	countdown(1)
 	
-	elif(Button(config.BUTTON).is_pressed == True):
-		#5
-		countdown(5)
-		#4
-		countdown(4)
-		#3
-		countdown(3)
-		#2
-		countdown(2)
-		#1
-		countdown(1)
+	camera.capture("temp.jpg", resize=(1440, 1080)) #TODO: check resize whether affect image quality
+	camera.stop_preview()
+	
+	imagePreview = Popen(["feh", "-x", "temp.jpg"]) #TODO: open in middle
+	sleep(3)
+	#photo = open("bar.jpg", "rb")
 		
-		camera.capture("temp.jpg", resize=(1440, 1080)) #TODO: check resize whether affect image quality
-		camera.stop_preview()
+	try:
+		#twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
+		#TODO: Upload complete picture
+		# feh -x filename
+		sleep(5)
+	except:
+		#TODO: Upload Failed & check out the twitter acc. picture 
+		sleep(5)
+		pass
 		
-		imagePreview = Popen(["feh", "-x", "temp.jpg"]) #TODO: move to middle
-		sleep(3)
-		#photo = open("bar.jpg", "rb")
-		
-		try:
-			#twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
-			#TODO: Upload complete picture
-			# feh -x filename
-			sleep(5)
-		except:
-			#TODO: Upload Failed & check out the twitter acc. picture 
-			sleep(5)
-			pass
-		
-		camera.start_preview(fullscreen=False, window=window)
+	camera.start_preview(fullscreen=False, window=window)
+	imagePreview.terminate()
 
 camera.stop_preview()
 bg.terminate()
