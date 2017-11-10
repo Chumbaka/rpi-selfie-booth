@@ -1,3 +1,4 @@
+#DONT PUT THE RPI TO AUTO SLEEP/AUTO SCREEN OFF ETC ETC ETC
 import config
 
 import picamera
@@ -7,13 +8,17 @@ from twython import Twython
 from time import sleep
 from gpiozero import Button
 
+# disable all power saving features
+Popen(["xset", "s", "off"])
+Popen(["xset", "-dpms"])
+Popen(["xset", "s", "noblank"])
+
 #5...4...3...2...1...
 def countdown(sec):
 	sec = str(sec)
 	print(sec)
-	sec = Popen(["feh", "-x", "./img/" + sec + ".png"])
+	
 	sleep(1)
-	sec.terminate()
 
 camera = picamera.PiCamera()
 
@@ -24,9 +29,9 @@ bg = Popen(["feh", "-x", "./img/bg.png"])
 
 print(bg)
 
-res = (800, 600)
+res = (1024, 768)
 
-window = (int(1024/2 - 800/2), int(768/2 - 600/2)) + res
+window = (int(1280/2 - 1024/2), int(1024/2 - 768/2)) + res
 
 camera.start_preview(fullscreen=False, window=window)
 
@@ -34,6 +39,9 @@ while True:
 	
 	#checking Button.value == True in a loop is too stressful for rpi	
 	Button(config.BUTTON).wait_for_press()
+	#feh --fullscreen --slideshow-delay 1
+	#feh -g 400x300 img.img
+	countdownBG = Popen(["feh", "--fullscreen", "--slideshow-delay", "1", "./img/"])
 	#5
 	countdown(5)
 	#4
@@ -45,10 +53,11 @@ while True:
 	#1
 	countdown(1)
 	
-	camera.capture("temp.jpg", resize=(1440, 1080)) #TODO: check resize whether affect image quality
+	countdownBG.kill()
+	camera.capture(("temp.jpg"), resize=(1440, 1080)) #TODO: check resize whether affect image quality
 	camera.stop_preview()
 	
-	imagePreview = Popen(["feh", "-x", "temp.jpg"]) #TODO: open in middle
+	imagePreview = Popen(["feh", "-g", "1024x768+128+128", "-x", "temp.jpg"])#TODO: open in middle
 	sleep(3)
 	#photo = open("bar.jpg", "rb")
 		
