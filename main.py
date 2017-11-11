@@ -69,30 +69,32 @@ while True:
 	Button(config.BUTTON).wait_for_press()
 	#feh --fullscreen --slideshow-delay 1
 	#feh -g 400x300 img.img
-	countdownBG = Popen(["feh", "--fullscreen", "--slideshow-delay", "1", "./"])
+	countdownBG = Popen(["feh", "--fullscreen", "--slideshow-delay", "1", "./bg"])
 	
 	startCountdown(10)
 	
 	countdownBG.kill()
-	camera.capture(("temp.jpg"), resize=(1440, 1080)) #TODO: check resize whether affect image quality
+	camera.capture(("temp.jpg"), resize=(1440, 1080))
 	camera.stop_preview()
 	
-	imagePreview = Popen(["feh", "-g", "1024x768+128+128", "-x", "temp.jpg"])#TODO: open in middle
-	sleep(3)
-	#photo = open("bar.jpg", "rb")
+	imagePreview = Popen(["feh", "-g", "1024x768+128+128", "-x", "temp.jpg"])
+	sleep(2)
+	photo = open("temp.jpg", "rb")
 		
 	try:
-		#twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
-		#TODO: Upload complete picture
-		# feh -x filename
-		sleep(5)
+		twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
+		imagePreview.terminate()
+		complete = Popen(["feh", "--fullscreen", "complete.png")]
+		sleep(7)
+		complete.terminate()
 	except:
-		#TODO: Upload Failed & check out the twitter acc. picture 
-		sleep(5)
+		failed = Popen(["feh", "--fullscreen", "failed.png")]
+		sleep(7)
+		failed.terminate()
 		pass
 		
 	camera.start_preview(fullscreen=False, window=window)
-	imagePreview.terminate()
+	#imagePreview.terminate()
 
 camera.stop_preview()
 bg.terminate()
