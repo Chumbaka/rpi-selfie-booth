@@ -8,3 +8,6 @@ ACCESS_SECRET = ""
 #Button. Refer to https://www.raspberrypi.org/blog/gpio-zero-a-friendly-python-api-for-physical-computing/
 BUTTON = 4
 #KILLBUTTON = 17
+
+LED_1 = 17
+LED_2 = 18
