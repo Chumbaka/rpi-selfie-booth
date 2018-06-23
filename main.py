@@ -2,22 +2,16 @@
 import config
 
 import picamera
+from time import sleep
 from subprocess import Popen
+from subprocess import PIPE
 from twython import Twython
 # from PIL import Image
-from time import sleep
 from gpiozero import Button, LED
 
-# disable all power saving features
-# restart to clear the settings
-Popen(["xset", "s", "off"])
-Popen(["xset", "-dpms"])
-Popen(["xset", "s", "noblank"])
-
-led1 = LED(config.LED_1)
-led2 = LED(config.LED_2)
 
 #5...4...3...2...1...
+#TODO move out LED part so it is not hard-coded
 def countdown(sec):
 	sec = int(sec)
 	if sec > 5:
@@ -43,6 +37,30 @@ def startCountdown(startSec):
 		countdown(startSec)
 		startSec -= 1
 
+
+# disable all power saving features
+# restart to clear these settings
+Popen(["xset", "s", "off"])
+Popen(["xset", "-dpms"])
+Popen(["xset", "s", "noblank"])
+
+led1 = LED(config.LED_1)
+led2 = LED(config.LED_2)
+
+#run xrandr | grep '*' and obtain the resolution
+xrandr = Popen(["xrandr"], stdout=PIPE)
+grep = Popen(["grep", '*'], stdin=xrandr.stdout, stdout=PIPE)
+xrandr.stdout.close()
+res = str(grep.communicate()[0])
+res = res.split("x")
+
+res[0] = res.split("'") #using b' as a point of spliting
+
+width = int(res[0][1].strip())
+height = int(res[1].split(" ")[0])
+
+res = (width, height)
+
 camera = picamera.PiCamera()
 
 twitter = Twython(config.CONSUMER_KEY, config.CONSUMER_SECRET, config.ACCESS, config.ACCESS_SECRET)
@@ -52,8 +70,7 @@ bg = Popen(["feh", "--fullscreen", "./bg-final.png"])
 
 print(bg)
 
-res = (1024, 768)
-
+#TODO configure the webcam to be in the middle according to the resolution
 window = (int(1280/2 - 1024/2), int(1024/2 - 768/2)) + res
 
 camera.start_preview(fullscreen=False, window=window)
@@ -79,10 +96,13 @@ while True:
 	
 	imagePreview = Popen(["feh", "-g", "1024x768+128+128", "-x", "temp.jpg"])
 	sleep(2)
+
+	#TODO open uploading image after preview
 	photo = open("temp.jpg", "rb")
 		
 	try:
 		twitter.update_status_with_media(media=photo, status="Testing, testing. Anyone can see me?")
+		#TODO remember this one here
 		imagePreview.terminate()
 		complete = Popen(["feh", "--fullscreen", "complete.png")]
 		sleep(7)
@@ -94,7 +114,6 @@ while True:
 		pass
 		
 	camera.start_preview(fullscreen=False, window=window)
-	#imagePreview.terminate()
 
 camera.stop_preview()
 bg.terminate()
@@ -102,14 +121,3 @@ bg.terminate()
 
 #overlay in picamera is still not working as expected. not using it
 #Image (Image.open & etc) is from the PIL Library
-
-# img = Image.open("foo.jpg")
-# over = camera.add_overlay(img.tobytes(), size=img.size)
-
-#picamera preview defaults at layer 2
-
-# over.layer = 3
-
-#alpha = 0 is transparent, and vice versa
-
-# over.alpha = 0
